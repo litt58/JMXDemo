@@ -34,7 +34,34 @@ public class JMXInfo implements Serializable {
      * 持续时间
      */
     private Long uptime;
-
+    /**
+     * 堆内存使用量(bytes)
+     */
+    private Long usedHeapMemory;
+    /**
+     * 堆内存最大值(bytes)
+     */
+    private Long maxHeapMemory;
+    /**
+     * 堆内存分配值(bytes)
+     */
+    private Long committedHeapMemory;
+    /**
+     * 栈内存使用量(bytes)
+     */
+    private Long usedNonHeapMemory;
+    /**
+     * 栈内存最大值(bytes)
+     */
+    private Long maxNonHeapMemory;
+    /**
+     * 栈内存分配值(bytes)
+     */
+    private Long committedNonHeapMemory;
+    /**
+     * 线程数
+     */
+    private Long threadCount;
 
     public String getVmVendor() {
         return VmVendor;
@@ -76,6 +103,62 @@ public class JMXInfo implements Serializable {
         this.uptime = uptime;
     }
 
+    public Long getUsedHeapMemory() {
+        return usedHeapMemory;
+    }
+
+    public void setUsedHeapMemory(Long usedHeapMemory) {
+        this.usedHeapMemory = usedHeapMemory;
+    }
+
+    public Long getMaxHeapMemory() {
+        return maxHeapMemory;
+    }
+
+    public void setMaxHeapMemory(Long maxHeapMemory) {
+        this.maxHeapMemory = maxHeapMemory;
+    }
+
+    public Long getCommittedHeapMemory() {
+        return committedHeapMemory;
+    }
+
+    public void setCommittedHeapMemory(Long committedHeapMemory) {
+        this.committedHeapMemory = committedHeapMemory;
+    }
+
+    public Long getUsedNonHeapMemory() {
+        return usedNonHeapMemory;
+    }
+
+    public void setUsedNonHeapMemory(Long usedNonHeapMemory) {
+        this.usedNonHeapMemory = usedNonHeapMemory;
+    }
+
+    public Long getMaxNonHeapMemory() {
+        return maxNonHeapMemory;
+    }
+
+    public void setMaxNonHeapMemory(Long maxNonHeapMemory) {
+        this.maxNonHeapMemory = maxNonHeapMemory;
+    }
+
+    public Long getCommittedNonHeapMemory() {
+        return committedNonHeapMemory;
+    }
+
+    public void setCommittedNonHeapMemory(Long committedNonHeapMemory) {
+        this.committedNonHeapMemory = committedNonHeapMemory;
+    }
+
+    public Long getThreadCount() {
+        return threadCount;
+    }
+
+    public void setThreadCount(Long threadCount) {
+        this.threadCount = threadCount;
+    }
+
     @Override
     public String toString() {
         return "JMXInfo{" +
@@ -84,6 +167,13 @@ public class JMXInfo implements Serializable {
                 ", VmVersion='" + VmVersion + '\'' +
                 ", startTime=" + startTime +
                 ", uptime=" + uptime +
+                ", usedHeapMemory=" + usedHeapMemory +
+                ", maxHeapMemory=" + maxHeapMemory +
+                ", committedHeapMemory=" + committedHeapMemory +
+                ", usedNonHeapMemory=" + usedNonHeapMemory +
+                ", maxNonHeapMemory=" + maxNonHeapMemory +
+                ", committedNonHeapMemory=" + committedNonHeapMemory +
+                ", threadCount=" + threadCount +
                 '}';
     }
 }

@@ -4,10 +4,12 @@ package com.jzli.jmx.demo;
 import com.jzli.jmx.demo.bean.JMXInfo;
 
 import javax.management.*;
+import javax.management.openmbean.CompositeDataSupport;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
+import java.lang.management.MemoryUsage;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Formatter;
@@ -30,6 +32,7 @@ public class JMXClient {
     public void start() throws AttributeNotFoundException, MBeanException, ReflectionException, InstanceNotFoundException, IOException, MalformedObjectNameException {
         String protocol = "jmxmp";
         String host = "172.19.60.240";
+        host = "172.19.62.209";
         int port = 9999;
         JMXServiceURL jmxURL = new JMXServiceURL(protocol, host, port);
         JMXConnector jmxc = JMXConnectorFactory.connect(jmxURL);
@@ -43,20 +46,36 @@ public class JMXClient {
         String vmName = (String) mbsc.getAttribute(runtimeObjName, "VmName");
         Date startTime = new Date((Long) mbsc.getAttribute(runtimeObjName, "StartTime"));
         Long timeSpan = (Long) mbsc.getAttribute(runtimeObjName, "Uptime");
-        String uptime = formatTimeSpan(timeSpan);
 
         jmxInfo.setVmVendor(vmVendor);
         jmxInfo.setVmName(vmName);
         jmxInfo.setVmVersion(vmVersion);
         jmxInfo.setStartTime(startTime);
         jmxInfo.setUptime(timeSpan);
+
+
+        ObjectName heapObjName = new ObjectName("java.lang:type=Memory");
+        //堆内存
+        MemoryUsage heapMemoryUsage = MemoryUsage
+                .from((CompositeDataSupport) mbsc.getAttribute(heapObjName,
+                        "HeapMemoryUsage"));
+        jmxInfo.setMaxHeapMemory(heapMemoryUsage.getMax());
+        jmxInfo.setCommittedHeapMemory(heapMemoryUsage.getCommitted());
+        jmxInfo.setUsedHeapMemory(heapMemoryUsage.getUsed());
+
+
+        //栈内存
+        MemoryUsage nonHeapMemoryUsage = MemoryUsage
+                .from((CompositeDataSupport) mbsc.getAttribute(heapObjName,
+                        "NonHeapMemoryUsage"));
+
+        jmxInfo.setCommittedNonHeapMemory(nonHeapMemoryUsage.getCommitted());
+        jmxInfo.setMaxNonHeapMemory(nonHeapMemoryUsage.getMax());
+        jmxInfo.setUsedNonHeapMemory(nonHeapMemoryUsage.getUsed());
+
         System.out.println(jmxInfo);
 
-        System.out.println("厂商:" + vmVendor);
-        System.out.println("程序:" + vmName);
-        System.out.println("版本:" + vmVersion);
-        System.out.println("启动时间:" + df.format(startTime));
-        System.out.println("连续工作时间:" + uptime);
+
     }
 
     public static void main(String[] args) throws Exception {
@@ -86,4 +105,5 @@ public class JMXClient {
         return formatter.format("%1$d天 %2$02d:%3$02d:%4$02d.%5$03d",
                 days, hours, mins, seconds, minseconds).toString();
     }
+
 }
