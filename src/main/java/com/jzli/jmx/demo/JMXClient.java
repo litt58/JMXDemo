@@ -35,7 +35,9 @@ public class JMXClient {
         String host = "172.19.60.240";
         host = "172.19.62.209";
         int port = 9999;
-        JMXServiceURL jmxURL = new JMXServiceURL(protocol, host, port);
+        String url = "service:jmx:rmi:///jndi/rmi://172.19.62.209:9999/jmxrmi";
+//        JMXServiceURL jmxURL = new JMXServiceURL(protocol, host, port);
+        JMXServiceURL jmxURL = new JMXServiceURL(url);
         JMXConnector jmxc = JMXConnectorFactory.connect(jmxURL);
         MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
 
@@ -128,12 +130,17 @@ public class JMXClient {
                 System.out.println("端口名:" + obj.getKeyProperty("name"));
                 ObjectName objectName = new ObjectName(obj.getCanonicalName());
                 Object maxThreads = mbsc.getAttribute(objectName, "maxThreads");
-                Object currentThreadCount = mbsc.getAttribute(objectName, "currentThreadCount");
+                Integer currentThreadCount = (Integer) mbsc.getAttribute(objectName, "currentThreadCount");
                 Object currentThreadsBusy = mbsc.getAttribute(objectName, "currentThreadsBusy");
 
                 System.out.println("最大线程数:" + maxThreads);
                 System.out.println("当前线程数:" + currentThreadCount);
                 System.out.println("繁忙线程数:" + currentThreadsBusy);
+                if(jvmInfo.getThreadCount()!=null) {
+                    jvmInfo.setThreadCount(jvmInfo.getThreadCount() + currentThreadCount);
+                }else{
+                    jvmInfo.setThreadCount(currentThreadCount);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -61,7 +61,7 @@ public class JMXInfo implements Serializable {
     /**
      * 线程数
      */
-    private Long threadCount;
+    private Integer threadCount;
 
     public String getVmVendor() {
         return VmVendor;
@@ -151,11 +151,11 @@ public class JMXInfo implements Serializable {
         this.committedNonHeapMemory = committedNonHeapMemory;
     }
 
-    public Long getThreadCount() {
+    public Integer getThreadCount() {
         return threadCount;
     }
 
-    public void setThreadCount(Long threadCount) {
+    public void setThreadCount(Integer threadCount) {
         this.threadCount = threadCount;
     }
 
