@@ -13,6 +13,7 @@ import java.lang.management.MemoryUsage;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Formatter;
+import java.util.Set;
 
 /**
  * =======================================================
@@ -37,23 +38,34 @@ public class JMXClient {
         JMXServiceURL jmxURL = new JMXServiceURL(protocol, host, port);
         JMXConnector jmxc = JMXConnectorFactory.connect(jmxURL);
         MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
-        ObjectName runtimeObjName = new ObjectName("java.lang:type=Runtime");
+
 
         JMXInfo jmxInfo = new JMXInfo();
 
-        String vmVendor = (String) mbsc.getAttribute(runtimeObjName, "VmVendor");
-        String vmVersion = (String) mbsc.getAttribute(runtimeObjName, "VmVersion");
-        String vmName = (String) mbsc.getAttribute(runtimeObjName, "VmName");
-        Date startTime = new Date((Long) mbsc.getAttribute(runtimeObjName, "StartTime"));
-        Long timeSpan = (Long) mbsc.getAttribute(runtimeObjName, "Uptime");
+        getBaseInfo(mbsc, jmxInfo);
 
-        jmxInfo.setVmVendor(vmVendor);
-        jmxInfo.setVmName(vmName);
-        jmxInfo.setVmVersion(vmVersion);
-        jmxInfo.setStartTime(startTime);
-        jmxInfo.setUptime(timeSpan);
+        getMemoryInfo(mbsc, jmxInfo);
+
+        getThreadInfo(mbsc, jmxInfo);
+
+        System.out.println(jmxInfo);
 
 
+    }
+
+    /**
+     * 获取内存信息
+     *
+     * @param mbsc
+     * @param jmxInfo
+     * @throws MalformedObjectNameException
+     * @throws MBeanException
+     * @throws AttributeNotFoundException
+     * @throws InstanceNotFoundException
+     * @throws ReflectionException
+     * @throws IOException
+     */
+    private void getMemoryInfo(MBeanServerConnection mbsc, JMXInfo jmxInfo) throws MalformedObjectNameException, MBeanException, AttributeNotFoundException, InstanceNotFoundException, ReflectionException, IOException {
         ObjectName heapObjName = new ObjectName("java.lang:type=Memory");
         //堆内存
         MemoryUsage heapMemoryUsage = MemoryUsage
@@ -72,10 +84,60 @@ public class JMXClient {
         jmxInfo.setCommittedNonHeapMemory(nonHeapMemoryUsage.getCommitted());
         jmxInfo.setMaxNonHeapMemory(nonHeapMemoryUsage.getMax());
         jmxInfo.setUsedNonHeapMemory(nonHeapMemoryUsage.getUsed());
+    }
 
-        System.out.println(jmxInfo);
+    /**
+     * 获取基本信息
+     *
+     * @param mbsc
+     * @param jmxInfo
+     * @throws MalformedObjectNameException
+     * @throws MBeanException
+     * @throws AttributeNotFoundException
+     * @throws InstanceNotFoundException
+     * @throws ReflectionException
+     * @throws IOException
+     */
+    private void getBaseInfo(MBeanServerConnection mbsc, JMXInfo jmxInfo) throws MalformedObjectNameException, MBeanException, AttributeNotFoundException, InstanceNotFoundException, ReflectionException, IOException {
+        ObjectName runtimeObjName = new ObjectName("java.lang:type=Runtime");
+        String vmVendor = (String) mbsc.getAttribute(runtimeObjName, "VmVendor");
+        String vmVersion = (String) mbsc.getAttribute(runtimeObjName, "VmVersion");
+        String vmName = (String) mbsc.getAttribute(runtimeObjName, "VmName");
+        Date startTime = new Date((Long) mbsc.getAttribute(runtimeObjName, "StartTime"));
+        Long timeSpan = (Long) mbsc.getAttribute(runtimeObjName, "Uptime");
 
+        jmxInfo.setVmVendor(vmVendor);
+        jmxInfo.setVmName(vmName);
+        jmxInfo.setVmVersion(vmVersion);
+        jmxInfo.setStartTime(startTime);
+        jmxInfo.setUptime(timeSpan);
+    }
 
+    /**
+     * 获取线程信息
+     *
+     * @param mbsc
+     * @param jvmInfo
+     */
+    private void getThreadInfo(MBeanServerConnection mbsc, JMXInfo jvmInfo) {
+        try {
+            ObjectName threadPoolObjName = new ObjectName(
+                    "Catalina:type=ThreadPool,*");
+            Set<ObjectName> set = mbsc.queryNames(threadPoolObjName, null);
+            for (ObjectName obj : set) {
+                System.out.println("端口名:" + obj.getKeyProperty("name"));
+                ObjectName objectName = new ObjectName(obj.getCanonicalName());
+                Object maxThreads = mbsc.getAttribute(objectName, "maxThreads");
+                Object currentThreadCount = mbsc.getAttribute(objectName, "currentThreadCount");
+                Object currentThreadsBusy = mbsc.getAttribute(objectName, "currentThreadsBusy");
+
+                System.out.println("最大线程数:" + maxThreads);
+                System.out.println("当前线程数:" + currentThreadCount);
+                System.out.println("繁忙线程数:" + currentThreadsBusy);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) throws Exception {
